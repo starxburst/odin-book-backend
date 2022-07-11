@@ -15,6 +15,14 @@ dotenv.config();
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true },
     () => console.log('Connected to MongoDB'));
 
+app.use(cors(
+    {
+        origin: 'http://localhost:3000',
+        credentials: true
+    }
+));
+
+
 //Middleware
 app.use(express.json());
 app.use('/api/user', authRoutes);
@@ -30,12 +38,6 @@ app.use(cookieSession(
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-app.use(cors({
-    origin: '*',
-    method: "GET,POST,PUT,DELETE",
-    credentials: true,
-}))
 
 app.listen(5000, () => {
   console.log('Server is running on port 5000');
