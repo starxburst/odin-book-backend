@@ -1,14 +1,12 @@
 const router = require('express').Router();
 const user = require('../model/user');
 const verifyToken = require('../routes/verifyToken');
+const postController = require('../controllers/postController');
 
-router.get('/', verifyToken, async (req, res) => {
-    try {
-        const users = await user.find({_id: req.user});
-        res.send(users);
-    } catch (err) {
-        res.status(400).send(err);
-    }
-});
+//Handle all posts on GET
+router.get('/', verifyToken, postController.getAllPosts);
+
+//POST request to create a new post
+router.post('/create', verifyToken, postController.createPost);
 
 module.exports = router;
