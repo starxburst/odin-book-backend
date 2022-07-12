@@ -9,6 +9,7 @@ exports.getAllPosts = async (req, res) => {
         const loggedInUser = await User.findById(req.user._id);
         const posts = await Post.find({ author: [req.user._id, ...loggedInUser.friends] })
         .sort({ timestamp: -1 })
+        .populate('author', 'name')
         .populate({
             path: "comments",
             model: "Comment",

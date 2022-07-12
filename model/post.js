@@ -29,4 +29,8 @@ const postSchema = new mongoose.Schema({
     }]
 });
 
+postSchema.virtual('formattedDate').get(function () {
+    return "test";
+})
+
 module.exports = mongoose.model('Post', postSchema);
