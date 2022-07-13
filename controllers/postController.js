@@ -56,3 +56,37 @@ exports.createPost = async (req, res) => {
     }
 
 }
+
+//Handle comment create on POST
+exports.createComment = async (req, res) => {
+    body("comment", "Comment required").trim().isLength({ min: 1 });
+    const { comment } = req.body;
+
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+        return res.status(400).json({ errors: result.array() });
+    }
+
+    try {
+        const newComment = new Comment({
+            user: req.user._id,
+            comment: comment,
+            timestamp: new Date(),
+            post: req.params.postId,
+            likes: []            
+        });
+        const savedComment = await newComment.save();
+
+        const relPost = await Post.findById(req.params.postId);
+        relPost.comments.push(savedComment);
+        await relPost.save();
+
+        const relComment = await Comment.findById(savedComment._id)
+        .populate('user', 'name');
+        console.log(`Comment Created ${relComment}`);
+        return res.status(201).json({message: "Comment created successfully", comment: relComment});
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({ message: err.message });
+    }
+}
