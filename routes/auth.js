@@ -4,6 +4,7 @@ const User = require('../model/user');
 const {registerValidation, loginValidation} = require('../model/validation');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const verifyToken = require('../routes/verifyToken');
 
 
 
@@ -64,5 +65,8 @@ router.post('/login', async (req, res) => {
     res.header('auth-token', token);
     res.json({ token: token, user: user });
 });
+
+//POST update user profile picture
+router.post('/:userId/profileimage', verifyToken);
 
 module.exports = router;
