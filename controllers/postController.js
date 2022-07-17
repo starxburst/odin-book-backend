@@ -2,6 +2,7 @@ const Post = require('../model/post');
 const User = require('../model/user');
 const Comment = require('../model/comment');
 const { body, validationResult } = require("express-validator");
+const Avatar = require('../model/avatar');
 
 //Handle all posts on GET
 exports.getAllPosts = async (req, res) => {
@@ -15,7 +16,11 @@ exports.getAllPosts = async (req, res) => {
             model: "Comment",
             populate: {
                 path: "user",
-                model: "User"
+                model: "User",
+                populate: {
+                    path: "avatar",
+                    model: "Avatar",
+                }
             }
         });
         return res.status(200).json({ posts: posts });

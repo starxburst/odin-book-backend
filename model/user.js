@@ -34,7 +34,11 @@ const userSchema = new mongoose.Schema({
     friendRequests: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-    }]
+    }],
+    avatar: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Avatar',
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);

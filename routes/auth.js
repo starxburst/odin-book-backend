@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../model/user');
+const Avatar = require('../model/avatar');
 const {registerValidation, loginValidation} = require('../model/validation');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../routes/verifyToken');
+const userController = require('../controllers/userController');
+const upload = require('../utils/multerConfig');
 
 
 
@@ -50,7 +53,7 @@ router.post('/login', async (req, res) => {
         return res.status(400).send(error.details[0].message);
     }
     //CHECK IF THE EMAIL EXISTS
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email }).populate('avatar');
     if (!user) {
         return res.status(400).send('Email is not found');
     }
@@ -67,6 +70,9 @@ router.post('/login', async (req, res) => {
 });
 
 //POST update user profile picture
-router.post('/:userId/profileimage', verifyToken);
+router.post('/:userId/profileimage', verifyToken, upload.single("imageFile"), userController.updateProfilePicture);
+
+//Get profile picture
+router.get('/:userId/profileimage', verifyToken, userController.getProfilePicture);
 
 module.exports = router;
