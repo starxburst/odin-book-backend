@@ -87,4 +87,10 @@ router.get('/:userId/friendrequest', verifyToken, userController.sendFriendReque
 //Accept friend request
 router.get('/:userId/acceptfriendrequest', verifyToken, userController.acceptFriendRequest);
 
+//Reject friend request
+router.get('/:userId/rejectfriendrequest', verifyToken, userController.rejectFriendRequest);
+
+//Remove friend
+router.get('/:userId/removefriend', verifyToken, userController.removeFriend);
+
 module.exports = router;

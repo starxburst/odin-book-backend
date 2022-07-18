@@ -151,23 +151,74 @@ exports.acceptFriendRequest = async (req, res) => {
 
     try {
         const user = await User.findById(userId);
+        const relUser = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ message: "No user found" });
         }
-        if (!user.friendRequests.includes(req.user._id)) {
-            return res.status(400).json({ message: "You have not sent a friend request to this user" });
+        if (!relUser.friendRequests.includes(user._id)) {
+            return res.status(400).json({ message: "This user don't have sent you a request!" });
         }
         if (user.friends.includes(req.user._id)) {
             return res.status(400).json({ message: "You are already friends with this user" });
         }
+        relUser.friends.push(userId);
+        relUser.friendRequests.splice(relUser.friendRequests.indexOf(userId), 1);
+        await relUser.save();
+
         user.friends.push(req.user._id);
-        user.friendRequests.splice(user.friendRequests.indexOf(req.user._id), 1);
+        await user.save();
+        return res.status(200).json({ message: "Friend request accepted successfully" });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+}
+
+//Reject friend request
+exports.rejectFriendRequest = async (req, res) => {
+    const userId = req.params.userId;
+    console.log(userId);
+
+    try {
+        const user = await User.findById(userId);
+        const relUser = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "No user found" });
+        }
+        if (!relUser.friendRequests.includes(user._id)) {
+            return res.status(400).json({ message: "This user don't have sent you a request!" });
+        }
+        if (user.friends.includes(req.user._id)) {
+            return res.status(400).json({ message: "You are already friends with this user" });
+        }
+
+        relUser.friendRequests.splice(relUser.friendRequests.indexOf(userId), 1);
+        await relUser.save();
+        return res.status(200).json({ message: "Friend request rejected successfully" });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+}
+
+//Remove friend
+exports.removeFriend = async (req, res) => {
+    const userId = req.params.userId;
+    console.log(userId);
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "No user found" });
+        }
+        if (!user.friends.includes(req.user._id)) {
+            return res.status(400).json({ message: "You are not friends with this user" });
+        }
+        user.friends.splice(user.friends.indexOf(req.user._id), 1);
         await user.save();
 
         const relUser = await User.findById(req.user._id);
-        relUser.friends.push(userId);
+        relUser.friends.splice(relUser.friends.indexOf(userId), 1);
         await relUser.save();
-        return res.status(200).json({ message: "Friend request accepted successfully" });
+        return res.status(200).json({ message: "Friend removed successfully" });
     } catch (err) {
         return res.status(400).json({ message: err.message });
     }
