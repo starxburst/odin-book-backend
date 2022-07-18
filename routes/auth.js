@@ -69,6 +69,9 @@ router.post('/login', async (req, res) => {
     res.json({ token: token, user: user });
 });
 
+//Automatically log in a user if they are logged in
+router.get('/me', verifyToken, userController.autoLogin);
+
 //POST update user profile picture
 router.post('/:userId/profileimage', verifyToken, upload.single("imageFile"), userController.updateProfilePicture);
 
