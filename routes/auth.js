@@ -75,4 +75,16 @@ router.post('/:userId/profileimage', verifyToken, upload.single("imageFile"), us
 //Get profile picture
 router.get('/:userId/profileimage', verifyToken, userController.getProfilePicture);
 
+//Search for users
+router.get('/search/:searchParam', verifyToken, userController.searchUsers);
+
+//Get user info
+router.get('/:userId', verifyToken, userController.getUserInfo);
+
+//Send friend request
+router.get('/:userId/friendrequest', verifyToken, userController.sendFriendRequest);
+
+//Accept friend request
+router.get('/:userId/acceptfriendrequest', verifyToken, userController.acceptFriendRequest);
+
 module.exports = router;

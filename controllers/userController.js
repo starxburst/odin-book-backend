@@ -2,6 +2,7 @@ const User = require('../model/user');
 const { check, body, validationResult } = require("express-validator");
 const Avatar = require('../model/avatar');
 const fs = require('fs');
+const { param } = require('../routes/auth');
 
 //POST update user profile picture
 exports.updateProfilePicture = async (req, res) => {
@@ -58,6 +59,115 @@ exports.getProfilePicture = async (req, res) => {
             return res.status(404).json({ message: "No profile picture found" });
         }
         return res.status(200).json({ avatar: avatar });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+}
+
+//Search for users
+exports.searchUsers = async (req, res) => {
+    const searchIndex = req.params.searchParam;
+    console.log(searchIndex);
+
+    try {
+        const users = await User.find({
+            $or: [
+                { name: { $regex: searchIndex, $options: "i" } },
+                { email: { $regex: searchIndex, $options: "i" } }
+            ]
+        })
+        .select('name')
+        .populate('avatar');
+        if (users.length === 0) {
+            return res.status(404).json({ message: "No users found" });
+        }
+        return res.status(200).json({ users: users });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+}
+
+//Get user info
+exports.getUserInfo = async (req, res) => {
+    const userId = req.params.userId;
+    console.log(userId);
+
+    try {
+        const user = await User.findById(userId)
+        .select('name avatar friends friendRequests')
+        .populate('avatar')
+        .populate({
+            path: 'friends',
+            model: 'User',
+            populate: {
+                path: 'avatar',
+                model: 'Avatar'
+            }})
+        .populate({
+            path: 'friendRequests',
+            model: 'User',
+            populate: {
+                path: 'avatar',
+                model: 'Avatar'
+            }});
+        if (!user) {
+            return res.status(404).json({ message: "No user found" });
+        }
+        return res.status(200).json({ user: user });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+}
+
+//Send friend request
+exports.sendFriendRequest = async (req, res) => {
+    const userId = req.params.userId;
+    console.log(userId);
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "No user found" });
+        }
+        if (user.friendRequests.includes(req.user._id)) {
+            return res.status(400).json({ message: "You have already sent a friend request to this user" });
+        }
+        if (user.friends.includes(req.user._id)) {
+            return res.status(400).json({ message: "You are already friends with this user" });
+        }
+        user.friendRequests.push(req.user._id);
+        await user.save();
+        return res.status(200).json({ message: "Friend request sent successfully" });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+
+}
+
+//Accept friend request
+exports.acceptFriendRequest = async (req, res) => {
+    const userId = req.params.userId;
+    console.log(userId);
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "No user found" });
+        }
+        if (!user.friendRequests.includes(req.user._id)) {
+            return res.status(400).json({ message: "You have not sent a friend request to this user" });
+        }
+        if (user.friends.includes(req.user._id)) {
+            return res.status(400).json({ message: "You are already friends with this user" });
+        }
+        user.friends.push(req.user._id);
+        user.friendRequests.splice(user.friendRequests.indexOf(req.user._id), 1);
+        await user.save();
+
+        const relUser = await User.findById(req.user._id);
+        relUser.friends.push(userId);
+        await relUser.save();
+        return res.status(200).json({ message: "Friend request accepted successfully" });
     } catch (err) {
         return res.status(400).json({ message: err.message });
     }

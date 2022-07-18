@@ -10,7 +10,14 @@ exports.getAllPosts = async (req, res) => {
         const loggedInUser = await User.findById(req.user._id);
         const posts = await Post.find({ author: [req.user._id, ...loggedInUser.friends] })
         .sort({ timestamp: -1 })
-        .populate('author', 'name')
+        .limit(10)
+        .populate({
+            path: 'author',
+            model: 'User',
+            populate: {
+                path: 'avatar',
+                model: 'Avatar'
+            }})
         .populate({
             path: "comments",
             model: "Comment",
