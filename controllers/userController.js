@@ -90,7 +90,8 @@ exports.searchUsers = async (req, res) => {
 //Auto Login
 exports.autoLogin = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id)
+        .populate('avatar');
         if (!user) {
             return res.status(404).json({ message: "No user found" });
         }
