@@ -102,3 +102,35 @@ exports.createComment = async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 }
+
+//Handle like post on PUT
+exports.likePost = async (req, res) => {
+    try {
+        const relPost = await Post.findById(req.params.postId);
+        if (!relPost.likes.includes(req.user._id)) {
+            relPost.likes.push(req.user._id);
+            await relPost.save();
+            console.log(`Post Liked ${relPost}`);
+            res.status(201).json({message: "Post liked successfully", post: relPost});
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({ message: err.message });
+    }
+}
+
+//Handle unlike post on PUT
+exports.unlikePost = async (req, res) => {
+    try {
+        const relPost = await Post.findById(req.params.postId);
+        if (relPost.likes.includes(req.user._id)) {
+            relPost.likes.pull(req.user._id);
+            await relPost.save();
+            console.log(`Post Unliked ${relPost}`);
+            res.status(201).json({message: "Post unliked successfully", post: relPost});
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({ message: err.message });
+    }
+}
