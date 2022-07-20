@@ -24,8 +24,15 @@ const limiter = rateLimit({
 app.use(limiter)
 */
 //Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true },
-    () => console.log('Connected to MongoDB'));
+mongoose.connect(process.env.MONGODB_URI,
+    { 
+        useNewUrlParser: true
+    },
+    (error) =>
+    {
+        if(error) return console.log(error);
+        console.log('Connected to MongoDB');
+    });
 
 app.use(cors(
     {
@@ -33,6 +40,10 @@ app.use(cors(
         credentials: true
     }
 ));
+
+app.route('/').get((req, res) => {
+    res.sendFile(process.cwd() + '/index.html');
+});
 
 
 //Middleware
@@ -51,6 +62,6 @@ app.use(cookieSession(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.listen(5000, () => {
-  console.log('Server is running on port 5000');
+app.listen(process.env.PORT || 5000, () => {
+  console.log('Server is running on port  %d in %s mode", this.address().port, app.settings.env');
 })
