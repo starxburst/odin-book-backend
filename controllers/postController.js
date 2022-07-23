@@ -7,6 +7,7 @@ const Avatar = require('../model/avatar');
 //Handle all posts on GET
 exports.getAllPosts = async (req, res) => {
     try {
+        console.log(`All post ${req.params.userId}`);
         const loggedInUser = await User.findById(req.user._id);
         const posts = await Post.find({ author: [req.user._id, ...loggedInUser.friends] })
         .sort({ timestamp: -1 })
@@ -36,6 +37,37 @@ exports.getAllPosts = async (req, res) => {
     }
 }
 
+//Handle single user posts on GET
+exports.getUserPosts = async (req, res) => {
+    try {
+        console.log(`Single Post ${req.params.userId}`);
+        const posts = await Post.find({ author: req.params.userId })
+        .sort({ timestamp: -1 })
+        .limit(10)
+        .populate({
+            path: 'author',
+            model: 'User',
+            populate: {
+                path: 'avatar',
+                model: 'Avatar'
+            }})
+        .populate({
+            path: "comments",
+            model: "Comment",
+            populate: {
+                path: "user",
+                model: "User",
+                populate: {
+                    path: "avatar",
+                    model: "Avatar",
+                }
+            }
+        });
+        return res.status(200).json({ posts: posts });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+}
 
 //Handle post create on POST
 exports.createPost = async (req, res) => {

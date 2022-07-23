@@ -7,7 +7,7 @@ const postController = require('../controllers/postController');
 router.get('/', verifyToken, postController.getAllPosts);
 
 //Get request to get user posts
-/*router.get('/:userid', verifyToken, postController.getUserPosts);*/
+router.get('/:userId', verifyToken, postController.getUserPosts);
 
 //POST request to create a new post
 router.post('/create', verifyToken, postController.createPost);
