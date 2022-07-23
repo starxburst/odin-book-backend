@@ -10,7 +10,7 @@ exports.updateProfilePicture = async (req, res) => {
     .custom((value, { req }) => {
         if (!req.file) {
             throw new Error("No file was uploaded");
-        } else if (req.file.mimetype !== "image/jpeg" && req.file.mimetype !== "image/png") {
+        } else if (req.file.mimetype !== "image/jpeg" || req.file.mimetype !== "image/png" || req.file.mimetype !== "image/jpg" || req.file.mimetype !== "image/webp") {
             throw new Error("Only jpeg and png images are allowed");
         }
     }).withMessage("Only jpeg and png images are allowed");
