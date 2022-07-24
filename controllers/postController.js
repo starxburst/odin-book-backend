@@ -8,10 +8,13 @@ const Avatar = require('../model/avatar');
 exports.getAllPosts = async (req, res) => {
     try {
         console.log(`All post ${req.params.userId}`);
+        const postSkip = req.query.skip;
+        console.log(`Skip ${postSkip}`);
         const loggedInUser = await User.findById(req.user._id);
         const posts = await Post.find({ author: [req.user._id, ...loggedInUser.friends] })
         .sort({ timestamp: -1 })
-        .limit(10)
+        .skip(postSkip)
+        .limit(2)
         .populate({
             path: 'author',
             model: 'User',
@@ -37,13 +40,46 @@ exports.getAllPosts = async (req, res) => {
     }
 }
 
+//Get single post on GET
+exports.getSinglePost = async (req, res) => {
+    try {
+        const relPost = await Post.findById(req.params.postId)
+        .populate({
+            path: 'author',
+            model: 'User',
+            populate: {
+                path: 'avatar',
+                model: 'Avatar'
+            }
+        })
+        .populate({
+            path: "comments",
+            model: "Comment",
+            populate: {
+                path: "user",
+                model: "User",
+                populate: {
+                    path: "avatar",
+                    model: "Avatar",
+                }
+            }
+        })
+        return res.status(200).json({ post: relPost });
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+}
+
 //Handle single user posts on GET
 exports.getUserPosts = async (req, res) => {
     try {
+        const postSkip = req.query.skip;
+        console.log(`Skip ${postSkip}`);
         console.log(`Single Post ${req.params.userId}`);
         const posts = await Post.find({ author: req.params.userId })
         .sort({ timestamp: -1 })
-        .limit(10)
+        .skip(postSkip)
+        .limit(2)
         .populate({
             path: 'author',
             model: 'User',
