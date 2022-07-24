@@ -14,7 +14,7 @@ exports.getAllPosts = async (req, res) => {
         const posts = await Post.find({ author: [req.user._id, ...loggedInUser.friends] })
         .sort({ timestamp: -1 })
         .skip(postSkip)
-        .limit(2)
+        .limit(5)
         .populate({
             path: 'author',
             model: 'User',
@@ -79,7 +79,7 @@ exports.getUserPosts = async (req, res) => {
         const posts = await Post.find({ author: req.params.userId })
         .sort({ timestamp: -1 })
         .skip(postSkip)
-        .limit(2)
+        .limit(5)
         .populate({
             path: 'author',
             model: 'User',
