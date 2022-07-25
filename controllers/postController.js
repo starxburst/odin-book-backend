@@ -124,7 +124,27 @@ exports.createPost = async (req, res) => {
             likes: []
         });
         const savedPost = await post.save();
-        const relPost = await Post.findById(savedPost._id).populate('author', 'name');
+        const relPost = await Post.findById(savedPost._id)
+        .populate({
+            path: 'author',
+            model: 'User',
+            populate: {
+                path: 'avatar',
+                model: 'Avatar'
+            }
+        })
+        .populate({
+            path: "comments",
+            model: "Comment",
+            populate: {
+                path: "user",
+                model: "User",
+                populate: {
+                    path: "avatar",
+                    model: "Avatar",
+                }
+            }
+        })
         if (relPost) {
             console.log(`Post Created ${relPost}`);
             res.status(201).json({message: "Post created successfully", post: relPost});
